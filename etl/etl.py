@@ -222,12 +222,38 @@ def getPricing(shortName, apiKey):
 def mapPricingResults(pricing):
     return {
         'date': pricing[0],
-        'open': pricing[1]['1a. open (USD)'],
-        'high': pricing[1]['2a. high (USD)'],
-        'low': pricing[1]['3a. low (USD)'],
-        'close': pricing[1]['4a. close (USD)'],
+        'openPrice': pricing[1]['1a. open (USD)'],
+        'highPrice': pricing[1]['2a. high (USD)'],
+        'lowPrice': pricing[1]['3a. low (USD)'],
+        'closePrice': pricing[1]['4a. close (USD)'],
         'volume': pricing[1]['5. volume']
     }
+
+#####
+#
+# Read text file to string
+#
+# fileName {string} - the file to read to string
+#
+# return - string text from file
+#
+#####
+def readFile(fileName):
+    contents = open(fileName, 'r')
+    return contents.read()
+
+#####
+#
+# Execute SQL with no output
+#
+# sql {string} - the sql query to execute
+# engine - the sql alchemy engine
+#
+#####
+def runSql(sql, engine):
+    conn = engine.raw_connection()
+    conn.execute(sql)
+    conn.close()
 
 
 
@@ -243,11 +269,11 @@ errors = []
 repos = []
 updateDates = []
 totalPricing = pd.DataFrame(columns = [
-    'close', 
+    'closePrice', 
     'date', 
-    'high', 
-    'low', 
-    'open', 
+    'highPrice', 
+    'lowPrice', 
+    'openPrice', 
     'volume', 
     'ticker'
 ])
@@ -389,8 +415,13 @@ for market in allBittrexBtcMarkets:
             githubLimit += 5000
             analysisStartTime = time.time()
 
-totalPricing.to_csv('totalPricing.csv', index = False)
-pd.DataFrame(updateDates).to_csv('updateDates.csv', index = False)
-pd.DataFrame(repos).to_csv('repos.csv', index = False)
-pd.DataFrame(errors).to_csv('errors.csv', index = False)
-pd.DataFrame(allBittrexBtcMarkets).to_csv('cryptoMarkets.csv')
+# Generate the database schema for the data inserts        
+createSchemaSql = readFile('../schema/schema.sql')
+runSql(createSchemaSql)
+
+# Load data to SQL database
+totalPricing.to_sql('cryptoTotalPricingExt', env.dbEngine, if_exists = 'append', index = False)
+pd.DataFrame(updateDates).to_sql('cryptoRepoUpdateDatesExt', env.dbEngine, if_exists = 'append', index = False)
+pd.DataFrame(repos).to_sql('cryptoReposExt', env.dbEngine, if_exists = 'append', index = False)
+pd.DataFrame(errors).to_sql('cryptoErrorsExt', env.dbEngine, if_exists = 'append', index = False)
+pd.DataFrame(allBittrexBtcMarkets).to_sql('cryptoAllBittrexMarketsExt', env.dbEngine, if_exists = 'append', index = False)
