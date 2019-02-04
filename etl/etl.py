@@ -277,6 +277,24 @@ totalPricing = pd.DataFrame(columns = [
     'volume', 
     'ticker'
 ])
+# Used to relabel bittrex data to adhere to camel case naming convention
+# in the data warehouse
+allBittrexBtcMarketsColumns = [
+    'baseCurrency',
+    'baseCurrencyLong',
+    'coinType',
+    'createdBittrex',
+    'isActive',
+    'isRestricted',
+    'isSponsored',
+    'logoUrl',
+    'marketCurrency',
+    'marketCurrencyLong',
+    'marketName',
+    'minTradeSize',
+    'notice',
+    'txFee'
+]
 # Bittrex naming doesn't match coingecko (where we pull the Github information 
 # from), so we'll need to use the following naming in the getBittrexBtcMarkets() 
 # function for the following coins
@@ -424,4 +442,7 @@ totalPricing.to_sql('cryptoTotalPricingExt', env.dbEngine, if_exists = 'append',
 pd.DataFrame(updateDates).to_sql('cryptoRepoUpdateDatesExt', env.dbEngine, if_exists = 'append', index = False)
 pd.DataFrame(repos).to_sql('cryptoReposExt', env.dbEngine, if_exists = 'append', index = False)
 pd.DataFrame(errors).to_sql('cryptoErrorsExt', env.dbEngine, if_exists = 'append', index = False)
-pd.DataFrame(allBittrexBtcMarkets).to_sql('cryptoAllBittrexMarketsExt', env.dbEngine, if_exists = 'append', index = False)
+
+allBittrexBtcMarkets = pd.DataFrame(allBittrexBtcMarkets)
+allBittrexBtcMarkets.columns = allBittrexBtcMarketsColumns
+allBittrexBtcMarkets.to_sql('cryptoAllBittrexMarketsExt', env.dbEngine, if_exists = 'append', index = False)
