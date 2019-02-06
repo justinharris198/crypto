@@ -15,7 +15,6 @@ create table cryptoTotalPricingExt (
 	volume float(53),
 	created datetime default getDate(),
 	modified datetime default getDate()
-
 );
 create table cryptoRepoUpdateDatesExt (
 	cryptoRepoUpdateDatesExtId int primary key identity,
